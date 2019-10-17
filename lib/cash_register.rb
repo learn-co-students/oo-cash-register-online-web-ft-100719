@@ -2,7 +2,7 @@ class CashRegister
   attr_accessor :discount, :items, :total, :transactions
   
   
-  def initialize(discount=nil)
+  def initialize(discount=0)
     @total = 0 
     @cart = {}
     @discount = discount
@@ -20,7 +20,7 @@ class CashRegister
   
   
   def apply_discount
-    if !@discount 
+    if @discount == 0
       "There is no discount to apply."
     else 
       @total = (1 - @discount.fdiv(100)) * @total
