@@ -24,7 +24,7 @@ class CashRegister
       "There is no discount to apply."
     else 
       @total = (1 - @discount.fdiv(100)) * @total
-      "After the discount, the total comes to $#{@total.ceil}."
+      "After the discount, the total comes to $#{@total.to_i}."
     end
     
   end
