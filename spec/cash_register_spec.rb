@@ -1,91 +1,42 @@
-describe 'CashRegister' do
-  let(:cash_register) { CashRegister.new }
-  let(:cash_register_with_discount) { CashRegister.new(20) }
+class CashRegister
 
-  describe '::new' do
-    it 'sets an instance variable @total on initialization to zero' do
-      expect(cash_register.instance_variable_get(:@total)).to eq(0)
-    end
+  attr_accessor :total, :discount, :last_transaction_amount, :items
 
-    it 'optionally takes an employee discount on initialization' do
-      expect(cash_register_with_discount.discount).to eq(20)
-    end
+  def initialize(discount = 0)
+    @total = 0
+    @discount = discount
+    @items = []
   end
 
-  describe '#total' do
-    it 'returns the current total' do
-      cash_register.total = 100
-      expect(cash_register.total).to eq(100)
-    end
-  end
 
-  describe '#add_item' do
-    it 'accepts a title and a price and increases the total' do
-      expect{cash_register.add_item("eggs", 0.98)}.to change{cash_register.total}.by(0.98)
-    end
-
-    it 'also accepts an optional quantity' do
-      expect{cash_register.add_item("book", 5.00, 3)}.to change{cash_register.total}.by(15.00)
-    end
-
-    it "doesn't forget about the previous total" do
-      cash_register.add_item("Lucky Charms", 4.5)
-      expect(cash_register.total).to eq(4.5)
-      cash_register.add_item("Ritz Crackers", 5.0)
-      expect(cash_register.total).to eq(9.5)
-      cash_register.add_item("Justin's Peanut Butter Cups", 2.50, 2)
-      expect(cash_register.total).to eq(14.5)
-    end
-  end
-
-  describe '#apply_discount' do
-    context 'the cash register was initialized with an employee discount' do
-      it 'applies the discount to the total price' do
-        cash_register_with_discount.add_item("macbook air", 1000)
-        cash_register_with_discount.apply_discount
-        expect(cash_register_with_discount.total).to eq(800)
+  def add_item(title,price,quantity = 1)
+    if quantity>1
+      i=0
+      while i<quantity
+        @items << title
+        i+=1
       end
-
-      it 'returns success message with updated total' do
-        cash_register_with_discount.add_item("macbook air", 1000)
-        expect(cash_register_with_discount.apply_discount).to eq("After the discount, the total comes to $800.")
-      end
-
-      it 'reduces the total' do
-        cash_register.total = 0
-        cash_register_with_discount.add_item("macbook air", 1000)
-        expect{cash_register_with_discount.apply_discount}.to change{cash_register_with_discount.total}.by(-200)
-      end
+    else
+      @items << title
     end
+    @total += price*quantity
+    @last_transaction_amount = @total
+    @total
+  end
 
-    context 'the cash register was not initialized with an employee discount' do
-      it 'returns a string error message that there is no discount to apply' do
-        expect(cash_register.apply_discount).to eq("There is no discount to apply.")
-      end
+  def apply_discount()
+    if @discount > 0
+      @discount = @discount/100.to_f
+      @total = @total - (@total * (@discount))
+      "After the discount, the total comes to $#{@total.to_i}."
+    else
+      "There is no discount to apply."
     end
   end
 
-  describe '#items' do
-    it 'returns an array containing all items that have been added' do
-      new_register = CashRegister.new
-      new_register.add_item("eggs", 1.99)
-      new_register.add_item("tomato", 1.76, 3)
-      expect(new_register.items).to eq(["eggs", "tomato", "tomato", "tomato"])
-    end
+
+  def void_last_transaction()
+    @total -= @last_transaction_amount
   end
 
-  describe '#void_last_transaction' do
-    it 'subtracts the last item from the total' do
-      cash_register.add_item("apple", 0.99)
-      cash_register.add_item("tomato", 1.76)
-      cash_register.void_last_transaction
-      expect(cash_register.total).to eq(0.99)
-    end
-
-    it 'returns the total to 0.0 if all items have been removed' do
-      cash_register.add_item("tomato", 1.76, 2)
-      expect{cash_register.void_last_transaction}.to change{cash_register.total}.from(3.52).to(0.0)
-    end
-  end
 end
-
